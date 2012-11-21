@@ -40,7 +40,9 @@
 	// always call "super" init
 	// Apple recommends to re-assign "self" with the "super's" return value
 	if( (self=[super init]) ) {
-		
+		initialDistance = 0.0f;
+        zoomFactor = 1.0f;
+        
 		// create and initialize a Label
 		CCLabelTTF *label = [CCLabelTTF labelWithString:@"Hello World" fontName:@"Marker Felt" fontSize:64];
 
@@ -48,12 +50,15 @@
 		CGSize size = [[CCDirector sharedDirector] winSize];
 	
 		// position the label on the center of the screen
-		label.position =  ccp( size.width /2 , size.height/2 );
+		label.position =  ccp( size.width /2 , size.height/2 + 20 );
 		
 		// add the label as a child to this Layer
 		[self addChild: label];
 		
-		
+        CCSprite *s = [CCSprite spriteWithFile:@"Default.png"];
+        s.position = ccp(size.width = 2, size.height /2);
+        [self addChild:s];
+        [self setTouchEnabled:YES];
 		
 		//
 		// Leaderboards and Achievements
@@ -102,6 +107,61 @@
 
 	}
 	return self;
+}
+
+-(BOOL)ccTouchBegan:(UITouch *)touch withEvent:(UIEvent *)event {
+    return YES;
+}
+
+- (void)ccTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    if([touches count] == 1) {
+        // Drag
+    } else if([touches count] == 2) {
+        NSArray *twoTouch = [touches allObjects];
+        UITouch *tOne = [twoTouch objectAtIndex:0];
+        UITouch *tTwo = [twoTouch objectAtIndex:1];
+        
+        CGPoint firstTouch = [tOne locationInView:[tOne view]];
+        CGPoint secondTouch = [tTwo locationInView:[tTwo view]];
+        
+        initialDistance = sqrt(pow(firstTouch.x - secondTouch.x, 2.0f) + pow(firstTouch.y - secondTouch.y, 2.0f));
+    }    
+}
+
+- (void)ccTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+    if([touches count] == 1) {
+        // Drag
+    } else if([touches count] == 2) {
+        NSArray *twoTouch = [touches allObjects];
+        UITouch *tOne = [twoTouch objectAtIndex:0];
+        UITouch *tTwo = [twoTouch objectAtIndex:1];
+        
+        CGPoint firstTouch = [tOne locationInView:[tOne view]];
+        CGPoint secondTouch = [tTwo locationInView:[tTwo view]];
+        
+        CGFloat currentDistance = sqrt(pow(firstTouch.x - secondTouch.x, 2.0f) + pow(firstTouch.y - secondTouch.y, 2.0f));
+        
+        if(initialDistance == 0) {
+            initialDistance = currentDistance;
+        } else if((currentDistance - initialDistance) > 0) {
+            NSLog(@"zoom in");
+            if(self.scale < 1.0f) {
+                zoomFactor += zoomFactor * 0.05f;
+                self.scale = zoomFactor;
+            }
+            
+            initialDistance = currentDistance;
+        } else if((currentDistance - initialDistance) < 0) {
+            NSLog(@"zoom out");
+            if(self.scale > 0.5f) {
+                zoomFactor -= zoomFactor * 0.05f;
+                self.scale = zoomFactor;
+            }
+            
+            initialDistance = currentDistance;
+        }
+                        NSLog(@"Scale: %f", self.scale);
+    }
 }
 
 // on "dealloc" you need to release all your retained objects

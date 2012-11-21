@@ -15,6 +15,8 @@
 // HelloWorldLayer
 @interface HelloWorldLayer : CCLayer <GKAchievementViewControllerDelegate, GKLeaderboardViewControllerDelegate>
 {
+    CGFloat initialDistance;
+    CGFloat zoomFactor;
 }
 
 // returns a CCScene that contains the HelloWorldLayer as the only child
